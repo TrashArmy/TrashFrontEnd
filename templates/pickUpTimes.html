@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html>
+
+<head lang="en">
+    <title>Trash App</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <!-- D3 code -->
+    <meta charset="UTF-8">
+    <script src="http://d3js.org/d3.v3.min.js" language="JavaScript"></script>
+    <script src="liquidFillGauge.js" language="JavaScript"></script>
+    <style>
+        .liquidFillGaugeText { font-family: Helvetica; font-weight: bold; }
+    </style>
+</head>
+
+<style type="text/css">
+    .table.table-striped {
+        width: 75%;
+        margin: 0 auto;
+        border-width: 1px;
+        background-color: rgba(150, 150, 150, 0.26);
+        border-color: #000000;
+    }
+    h2.home {
+        text-align: center;
+    }
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 60%;
+    }
+
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: center;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+
+<body>
+
+    <center>
+        <h1>Estimated Pickup Times</h1>
+        <br>
+        <h4><a href="/">Current Fill Level</a> | <a href="/pickupTimes"> Estimated Pick up Times </a> | <a href="/historicalData"> Historical Data </a> </h4>
+        <table width = "60%">
+            <tr>
+                <th>Category</th>
+                <th>Pickup Date </th>
+            </tr>
+            <tr>
+                <td>Paper</td>
+                <td>March 7th, 2018</td>
+            </tr>
+            <tr>
+                <td>Aluminum</td>
+                <td>March 11th, 2018</td>
+            </tr>
+            <tr>
+                <td>Plastic</td>
+                <td>March 5th, 2018</td>
+            </tr>
+            <tr>
+                <td>Landfill</td>
+                <td>March 7th, 2018</td>
+            </tr>
+        </table>
+     </center>
+        
+</body>
+
+</html>

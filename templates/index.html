@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html>
+
+<head lang="en">
+    <title>Trash App</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <!-- D3 code -->
+    <meta charset="UTF-8">
+    <script src="http://d3js.org/d3.v3.min.js" language="JavaScript"></script>
+    <script src="liquidFillGauge.js" language="JavaScript"></script>
+    <style>
+        .liquidFillGaugeText { font-family: Helvetica; font-weight: bold; }
+    </style>
+</head>
+
+<style type="text/css">
+    .table.table-striped {
+        width: 75%;
+        margin: 0 auto;
+        border-width: 1px;
+        background-color: rgba(150, 150, 150, 0.26);
+        border-color: #000000;
+    }
+    h2.home {
+        text-align: center;
+    }
+</style>
+
+<body>
+
+    <center>
+        <h1>Current Fill Level</h1>
+        <br>
+        <h4><a href="/">Current Fill Level</a> | <a href="/pickupTimes"> Estimated Pick up Times </a> | <a href="/historicalData"> Historical Data </a> </h4>
+    </center>
+        <table style="width:60%" align="center">
+            <tr>
+                <th>
+                    <h2 class = "home"> Paper </h2>
+                    <svg id="paperGauge" width="100%" height="225" onclick="paperGauge.update(NewValue());"></svg>
+                </th>
+                <th>
+                    <h2 class = "home"> Aluminum </h2>
+                    <svg id="alumGauge" width="100%" height="225" onclick="alumGauge.update(NewValue());"></svg>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <h2 class = "home"> Plastic </h2>
+                    <svg id="plasticGauge" width="100%" height="225" onclick="plasticGauge.update(NewValue());"></svg>
+                </th>
+                <th>
+                    <h2 class = "home"> Landfill </h2>
+                    <svg id="landGauge" width="100%" height="225" onclick="landGauge.update(NewValue());"></svg>
+                </th>
+            </tr>
+        </table>
+    <script language="JavaScript">
+        var paperConfig = liquidFillGaugeDefaultSettings();
+        paperConfig.circleColor = "#258ae7";
+        paperConfig.textColor = "#258ae7";
+        paperConfig.waveTextColor = "#258ae7";
+        paperConfig.waveColor = "#7db1d8";
+        paperConfig.circleThickness = 0.2;
+        paperConfig.textVertPosition = 0.2;
+        paperConfig.waveAnimateTime = 1000;
+        paperConfig.waveAnimate = false;
+        var paperGauge = loadLiquidFillGauge("paperGauge", 55, paperConfig);
+        
+        var alumConfig = liquidFillGaugeDefaultSettings();
+        alumConfig.circleColor = "#5a6369";
+        alumConfig.textColor = "#5a6369";
+        alumConfig.waveTextColor = "#5a6369";
+        alumConfig.waveColor = "#b6b6b6";
+        alumConfig.circleThickness = 0.2;
+        alumConfig.textVertPosition = 0.2;
+        alumConfig.waveAnimateTime = 1000;
+        var alumGauge= loadLiquidFillGauge("alumGauge", 28, alumConfig);
+        
+        var plasticConfig = liquidFillGaugeDefaultSettings();
+        plasticConfig.circleColor = "#176f14";
+        plasticConfig.waveColor = "#92d490";
+        plasticConfig.textColor = "#176f14";
+        plasticConfig.waveTextColor = "#176f14";
+        plasticConfig.circleThickness = 0.1;
+        plasticConfig.circleFillGap = 0.2;
+        plasticConfig.textVertPosition = 0.8;
+        plasticConfig.waveAnimateTime = 2000;
+        plasticConfig.waveHeight = 0.3;
+        plasticConfig.waveCount = 1;
+        var plasticGauge = loadLiquidFillGauge("plasticGauge", 60.1, plasticConfig);
+
+        var landConfig = liquidFillGaugeDefaultSettings();
+        landConfig.circleColor = "#ab4700";
+        landConfig.waveColor = "#b6835f";
+        landConfig.textColor = "#5e381d";
+        landConfig.waveTextColor = "#5e381d";
+        landConfig.circleThickness = 0.2;
+        landConfig.textVertPosition = 0.8;
+        landConfig.waveAnimateTime = 5000;
+        landConfig.waveHeight = 0.15;
+        landConfig.waveAnimate = true;
+        landConfig.waveCount = 3;
+        landConfig.waveOffset = 0.25;
+        landConfig.valueCountUp = false;
+        landConfig.displayPercent = false;
+        var landGauge = loadLiquidFillGauge("landGauge", 50, landConfig);
+
+        function NewValue(){
+            if(Math.random() > .5){
+                return Math.round(Math.random()*100);
+            } else {
+                return (Math.random()*100).toFixed(1);
+            }
+        }
+    </script>
+
+</body>
+
+</html>
