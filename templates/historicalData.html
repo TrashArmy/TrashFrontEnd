@@ -13,6 +13,16 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     
     <script data-require="d3@3.5.3" data-semver="3.5.3" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.js"></script>
+<!--     <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+          var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+          socket.on('connect', function() {
+                console.log("connected in historical data!")
+                socket.emit('my_event', {data: 'I\'m connected!'});
+            });
+          socket.emit('disconnect_request');
+        }
+    </script> -->
     <style>
       body {
         font: 10px sans-serif;
@@ -43,6 +53,7 @@
     <h4><a href="/">Current Fill Level</a> | <a href="/pickupTimes"> Estimated Pick up Times </a> | <a href="/historicalData"> Historical Data </a> </h4>
   </center>
   <script>
+
     var margin = {
     top: 20,
     right: 80,
@@ -89,7 +100,7 @@
       data.forEach(function(d) {
         d.date = +d.date;
       });
-      console.log(data);
+      // console.log(data);
       // var data = d3.tsv("data.tsv");
       color.domain(d3.keys(data[0]).filter(function(key) {
         return key !== "date";
@@ -255,7 +266,7 @@
 
       d3.selectAll(".mouse-per-line")
       .attr("transform", function(d, i) {
-        console.log(width/mouse[0])
+        // console.log(width/mouse[0])
         var xDate = x.invert(mouse[0]),
             bisect = d3.bisector(function(d) { return d.date; }).right;
             idx = bisect(d.values, xDate);

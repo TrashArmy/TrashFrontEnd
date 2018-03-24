@@ -6,11 +6,12 @@ from datetime import datetime
 from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, rooms, disconnect
 from threading import Lock
 import time
-
 import sqlite3
 import MySQLdb
-
 import sys
+import eventlet
+
+eventlet.monkey_patch()
 
 HOST = "159.203.125.202"
 USER = "remote"
@@ -24,11 +25,15 @@ app = Flask(__name__, static_url_path="")
 
 #! Socket Shtuff
 async_mode = None
-socketio = SocketIO(app, async_mode=async_mode)
+socketio = SocketIO(app, async_mode= async_mode)
 thread = None
 thread_lock = Lock()
 #!
 
+#global worker obj
+workerObject = None
+global switch;
+switch = False
 #! Socket Shtuff
 def background_thread():
     # Connect to MySql db
@@ -48,7 +53,9 @@ def background_thread():
     print("Current count " + str(count))
 
     # Continually check for change in number of db elements
-    while True:
+    global switch
+    print("Switch is " + str(switch));
+    while switch:
         cursor = conn.cursor();
         conn.begin();
         cursor.execute(" SELECT COUNT(*) FROM TrashData");
@@ -122,11 +129,15 @@ def home_page():
 
 @app.route('/pickupTimes', methods=['GET'])
 def view_times():
+    global switch
+    switch = False
     return render_template('pickUpTimes.html')
 
 
 @app.route('/historicalData', methods=['GET'])
-def view_history():       
+def view_history(): 
+    global switch
+    switch = False     
     return render_template('historicalData.html')
 
 #! Socketsss
@@ -183,10 +194,12 @@ def test_message(message):
 
 @socketio.on('disconnect_request', namespace='/test')
 def disconnect_request():
+    print("Disconnect message received!")
     session['receive_count'] = session.get('receive_count', 0) + 1
     emit('my_response',
          {'data': 'Disconnected!', 'count': session['receive_count']})
     disconnect()
+    print("Finished disconnect")
 
 
 # @socketio.on('my_ping', namespace='/test')
@@ -198,10 +211,13 @@ def disconnect_request():
 def test_connect():
     print("Connected in app.py")
     global thread
+    global switch
     with thread_lock:
         if thread is None:
+            switch = True
             thread = socketio.start_background_task(target=background_thread)
-    #emit('my_response', {'data': 'Connected', 'count': 0})
+
+    emit('my_response', {'data': 'Connected', 'count': 0})
 
 
 @socketio.on('disconnect', namespace='/test')
