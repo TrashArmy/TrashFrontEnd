@@ -36,7 +36,7 @@
             // Connect to the Socket.IO server.
             // The connection URL has the following format:
             //     http[s]://<domain>:<port>[/<namespace>]
-            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace,{transports: ['websocket']});
 
             // Event handler for new connections.
             // The callback function is invoked when a connection with the
@@ -44,6 +44,12 @@
             socket.on('connect', function() {
                 console.log("connected!")
                 socket.emit('my_event', {data: 'I\'m connected!'});
+            });
+
+            button = document.querySelector("button");
+            button.addEventListener("click", () => {
+                socket.emit('disconnect_request');
+                console.log("Button clicked and disconnecting from socketio?.");
             });
 
             // Event handler for server sent data.
@@ -66,6 +72,9 @@
                     console.log("Landfill fill level updated!");
                 }
             });
+
+
+
 
             // socket.on('my_response', function(msg) {
             //     console.log("my_response reached")
@@ -148,7 +157,8 @@
     <center>
         <h1>Current Fill Level </h1>
         <br>
-        <h4><a href="/">Current Fill Level</a> | <a href="/pickupTimes"> Estimated Pick up Times </a> | <a href="/historicalData"> Historical Data </a> </h4>
+        <h4><a href="/">Current Fill Level</a> | <a href="/pickupTimes"> Estimated Pick up Times </a> | <a id = 'data' href="/historicalData"> Historical Data </a> </h4>
+        <button>Click me</button>
     </center>
         <table style="width:60%" align="center">
             <tr>
