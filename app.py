@@ -32,64 +32,69 @@ thread = None
 thread_lock = Lock()
 #!
 
+dbcount = 100000000000000
+count = 0
+
+
 #global worker obj
 # workerObject = None
 # global switch;
 # switch = False
 #! Socket Shtuff
 
-def background_thread():
-    # Connect to MySql db
-    print("Entering thread")
-    conn = MySQLdb.connect (host = HOST,
-                            user = USER,
-                            passwd = PASS,
-                            db = DB, 
-                            port = 3306)
-    cursor = conn.cursor();
+# def background_thread():
+#     # Connect to MySql db
+#     global socketio
+#     print("Entering thread")
+#     conn = MySQLdb.connect (host = HOST,
+#                             user = USER,
+#                             passwd = PASS,
+#                             db = DB, 
+#                             port = 3306)
+#     cursor = conn.cursor();
 
-    # Take note of number of entries in db
-    cursor.execute(" SELECT COUNT(*) FROM TrashData");
-    results = cursor.fetchall();
-    count = int(results[0][0])
-    diff = 0
-    print("Current count " + str(count))
+#     # Take note of number of entries in db
+#     cursor.execute(" SELECT COUNT(*) FROM TrashData");
+#     results = cursor.fetchall();
+#     count = int(results[0][0])
+#     diff = 0
+#     print("Current count " + str(count))
 
-    # Continually check for change in number of db elements
-    # global switch
-    # print("Switch is " + str(switch));
-    while True:
-        # if switch:
-        cursor = conn.cursor();
-        conn.begin();
-        cursor.execute(" SELECT COUNT(*) FROM TrashData");
-        currentCount = cursor.fetchall();
-        if(int(currentCount[0][0]) > count):
-            print("Diff detected")
-            diff = int(currentCount[0][0]) - count
-            count = int(currentCount[0][0])
-            print("Current count " + str(count))
-            cmd = "SELECT * FROM TrashData ORDER BY timestamp DESC LIMIT " + str(diff)
-            cursor.execute(cmd)
-            new_entries = cursor.fetchall();
-            for item in new_entries:
-                print("Update deets: bin" + str(item[1]) + "fillLevel " + str(item[3]))
-                socketio.emit('my_response',
-                      {'bin': str(item[1]), 'fillLevel': str(item[3])},
-                      namespace='/test')
-                socketio.sleep(10)
-        cursor.close();
+#     # Continually check for change in number of db elements
+#     # global switch
+#     # print("Switch is " + str(switch));
+#     while True:
+#         # if switch:
+#         cursor = conn.cursor();
+#         conn.begin();
+#         cursor.execute(" SELECT COUNT(*) FROM TrashData");
+#         currentCount = cursor.fetchall();
+#         if(int(currentCount[0][0]) > count):
+#             print("Diff detected")
+#             diff = int(currentCount[0][0]) - count
+#             count = int(currentCount[0][0])
+#             print("Current count " + str(count))
+#             cmd = "SELECT * FROM TrashData ORDER BY timestamp DESC LIMIT " + str(diff)
+#             cursor.execute(cmd)
+#             new_entries = cursor.fetchall();
+#             for item in new_entries:
+#                 print("Update deets: bin" + str(item[1]) + "fillLevel " + str(item[3]))
+#                 socketio.emit('my_response',
+#                       {'bin': str(item[1]), 'fillLevel': str(item[3])},
+#                       namespace='/test')
+#                 socketio.sleep(10)
+#         cursor.close();
 
 #!
 
 @app.route('/', methods=['GET'])
 def home_page():
+    global dbcount, flag
     conn = MySQLdb.connect (host = HOST,
                             user = USER,
                             passwd = PASS,
                             db = DB, 
                             port = 3306)
-
     cursor = conn.cursor();
 
     fillLevel = [0,0,0,0]
@@ -148,13 +153,50 @@ def test_message(message):
     # emit('my_response',
     #      {'data': message['data'], 'count': session['receive_count']})
 
+@socketio.on('check_db', namespace='/test')
+def check_db(message):
+    global dbcount, socketio, count
+    conn = MySQLdb.connect (host = HOST,
+                            user = USER,
+                            passwd = PASS,
+                            db = DB, 
+                            port = 3306)
+    cursor = conn.cursor();
+    # # Take note of number of entries in db
+    cursor.execute(" SELECT COUNT(*) FROM TrashData");
+    results = cursor.fetchall();
+    currentCount = int(results[0][0])
+    oldCount = dbcount
+    dbcount = currentCount
+    if(currentCount > oldCount):
+        print("Diff detected")
+        diff = currentCount - oldCount
+        dbcount = currentCount
+        print("Current diff " + str(diff))
+        cmd = "SELECT * FROM TrashData ORDER BY timestamp DESC LIMIT " + str(diff)
+        cursor.execute(cmd)
+        new_entries = cursor.fetchall();
+        for item in new_entries:
+            print("Update deets: bin" + str(item[1]) + "fillLevel " + str(item[3]))
+            socketio.emit('my_response',
+                  {'bin': str(item[1]), 'fillLevel': str(item[3])},
+                  namespace='/test')
+            socketio.sleep(10)
+    cursor.close();
+
+    # session['receive_count'] = session.get('receive_count', 0) + 1
+    # emit('my_response',
+    #      {'data': message['data'], 'count': session['receive_count']})
 
 # @socketio.on('my_broadcast_event', namespace='/test')
 # def test_broadcast_message(message):
-#     session['receive_count'] = session.get('receive_count', 0) + 1
-#     emit('my_response',
-#          {'data': message['data'], 'count': session['receive_count']},
-#          broadcast=True)
+#     global count
+#     count = count + 1
+#     print(count)
+    # session['receive_count'] = session.get('receive_count', 0) + 1
+    # emit('my_response',
+    #      {'data': message['data'], 'count': session['receive_count']},
+    #      broadcast=True)
 
 
 # @socketio.on('join', namespace='/test')
@@ -200,10 +242,11 @@ def disconnect_request():
     emit('my_response',
          {'data': 'Disconnected!', 'count': session['receive_count']})
     #disconnect()
-    if thread.is_alive():
-        thread.terminate()
-        print("Finished disconnect")
-        thread = None
+    #if thread.is_alive():
+    #thread.terminate()
+    #thread.kill()
+    print("Finished disconnect")
+    thread = None
 
 
 # @socketio.on('my_ping', namespace='/test')
@@ -214,12 +257,13 @@ def disconnect_request():
 @socketio.on('connect', namespace='/test')
 def test_connect():
     print("Connected in app.py")
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = Process(target=background_thread)
-            thread.start()
-            thread.join()
+    global thread, socketio
+    #with thread_lock:
+        #if thread is None:
+            #thread = socketio.start_background_task(target=background_thread)
+            # thread = Process(target=background_thread)
+            # thread.start()
+            # thread.join()
     #emit('my_response', {'data': 'Connected', 'count': 0})
 
 
