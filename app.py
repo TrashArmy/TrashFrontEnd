@@ -4,16 +4,10 @@ from flask import Flask, jsonify, abort, request, make_response, url_for, render
 from flask import render_template, redirect
 from datetime import datetime
 from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, rooms, disconnect
-from threading import Lock
-import threading
 import time
-import sqlite3
 import MySQLdb
 import sys
-import eventlet
-from multiprocessing import Process
 
-eventlet.monkey_patch()
 
 HOST = "159.203.125.202"
 USER = "remote"
@@ -21,71 +15,15 @@ PASS = "login"
 DB = "SeniorDesign" 
 PORT = 3306
 
- 
-
 app = Flask(__name__, static_url_path="")
 
 #! Socket Shtuff
 async_mode = None
 socketio = SocketIO(app, async_mode= async_mode)
-thread = None
-thread_lock = Lock()
 #!
 
 dbcount = 100000000000000
-count = 0
 
-
-#global worker obj
-# workerObject = None
-# global switch;
-# switch = False
-#! Socket Shtuff
-
-# def background_thread():
-#     # Connect to MySql db
-#     global socketio
-#     print("Entering thread")
-#     conn = MySQLdb.connect (host = HOST,
-#                             user = USER,
-#                             passwd = PASS,
-#                             db = DB, 
-#                             port = 3306)
-#     cursor = conn.cursor();
-
-#     # Take note of number of entries in db
-#     cursor.execute(" SELECT COUNT(*) FROM TrashData");
-#     results = cursor.fetchall();
-#     count = int(results[0][0])
-#     diff = 0
-#     print("Current count " + str(count))
-
-#     # Continually check for change in number of db elements
-#     # global switch
-#     # print("Switch is " + str(switch));
-#     while True:
-#         # if switch:
-#         cursor = conn.cursor();
-#         conn.begin();
-#         cursor.execute(" SELECT COUNT(*) FROM TrashData");
-#         currentCount = cursor.fetchall();
-#         if(int(currentCount[0][0]) > count):
-#             print("Diff detected")
-#             diff = int(currentCount[0][0]) - count
-#             count = int(currentCount[0][0])
-#             print("Current count " + str(count))
-#             cmd = "SELECT * FROM TrashData ORDER BY timestamp DESC LIMIT " + str(diff)
-#             cursor.execute(cmd)
-#             new_entries = cursor.fetchall();
-#             for item in new_entries:
-#                 print("Update deets: bin" + str(item[1]) + "fillLevel " + str(item[3]))
-#                 socketio.emit('my_response',
-#                       {'bin': str(item[1]), 'fillLevel': str(item[3])},
-#                       namespace='/test')
-#                 socketio.sleep(10)
-#         cursor.close();
-
-#!
 
 @app.route('/', methods=['GET'])
 def home_page():
@@ -145,17 +83,20 @@ def view_times():
 def view_history(): 
     return render_template('historicalData.html')
 
-#! Socketsss
-@socketio.on('my_event', namespace='/test')
-def test_message(message):
-    print("Got my event, next should go to my response")
-    # session['receive_count'] = session.get('receive_count', 0) + 1
-    # emit('my_response',
-    #      {'data': message['data'], 'count': session['receive_count']})
+@socketio.on('connect', namespace='/test')
+def test_connect():
+    print("Connected on server side!")
+    global thread, socketio
+
+
+@socketio.on('disconnect', namespace='/test')
+def test_disconnect():
+    print('Client disconnected', request.sid)
+
 
 @socketio.on('check_db', namespace='/test')
 def check_db(message):
-    global dbcount, socketio, count
+    global dbcount, socketio
     conn = MySQLdb.connect (host = HOST,
                             user = USER,
                             passwd = PASS,
@@ -178,15 +119,25 @@ def check_db(message):
         new_entries = cursor.fetchall();
         for item in new_entries:
             print("Update deets: bin" + str(item[1]) + "fillLevel " + str(item[3]))
-            socketio.emit('my_response',
+            socketio.emit('update_gauges',
                   {'bin': str(item[1]), 'fillLevel': str(item[3])},
                   namespace='/test')
             socketio.sleep(10)
     cursor.close();
 
-    # session['receive_count'] = session.get('receive_count', 0) + 1
-    # emit('my_response',
-    #      {'data': message['data'], 'count': session['receive_count']})
+
+if __name__ == '__main__':
+    #!app.run(debug=True, port=5000)
+    socketio.run(app, debug=True)
+
+
+#! Socketsss
+# @socketio.on('my_event', namespace='/test')
+# def test_message(message):
+#     print("Got my event, next should go to my response")
+#     # session['receive_count'] = session.get('receive_count', 0) + 1
+#     # emit('my_response',
+#     #      {'data': message['data'], 'count': session['receive_count']})
 
 # @socketio.on('my_broadcast_event', namespace='/test')
 # def test_broadcast_message(message):
@@ -234,43 +185,18 @@ def check_db(message):
 #          room=message['room'])
 
 
-@socketio.on('disconnect_request', namespace='/test')
-def disconnect_request():
-    global thread
-    print("Disconnect message received!")
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': 'Disconnected!', 'count': session['receive_count']})
-    #disconnect()
-    #if thread.is_alive():
-    #thread.terminate()
-    #thread.kill()
-    print("Finished disconnect")
-    thread = None
+# @socketio.on('disconnect_request', namespace='/test')
+# def disconnect_request():
+#     global thread
+#     print("Disconnect message received!")
+#     session['receive_count'] = session.get('receive_count', 0) + 1
+#     emit('my_response',
+#          {'data': 'Disconnected!', 'count': session['receive_count']})
+#     #disconnect()
+#     #if thread.is_alive():
+#     #thread.terminate()
+#     #thread.kill()
+#     print("Finished disconnect")
+#     thread = None
 
 
-# @socketio.on('my_ping', namespace='/test')
-# def ping_pong():
-#     emit('my_pong')
-
-
-@socketio.on('connect', namespace='/test')
-def test_connect():
-    print("Connected in app.py")
-    global thread, socketio
-    #with thread_lock:
-        #if thread is None:
-            #thread = socketio.start_background_task(target=background_thread)
-            # thread = Process(target=background_thread)
-            # thread.start()
-            # thread.join()
-    #emit('my_response', {'data': 'Connected', 'count': 0})
-
-
-@socketio.on('disconnect', namespace='/test')
-def test_disconnect():
-    print('Client disconnected', request.sid)
-
-if __name__ == '__main__':
-    #!app.run(debug=True, port=5000)
-    socketio.run(app, debug=True)

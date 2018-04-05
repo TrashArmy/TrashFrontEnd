@@ -27,10 +27,6 @@
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function() {
             // Use a "/test" namespace.
-            // An application can open a connection on multiple namespaces, and
-            // Socket.IO will multiplex all those connections on a single
-            // physical channel. If you don't care about multiple channels, you
-            // can set the namespace to an empty string.
             namespace = '/test';
 
             window.setInterval(function() {
@@ -44,31 +40,25 @@
             var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 
             // Event handler for new connections.
-            // The callback function is invoked when a connection with the
-            // server is established.
             socket.on('connect', function() {
-                console.log("connected!")
-               
+                console.log("Connected on client side!")
             });
 
-            // Event handler for server sent data.
-            // The callback function is invoked whenever the server emits data
-            // to the client. The data is then displayed in the "Received"
-            // section of the page.
-            socket.on('my_response', function(msg) {
-                console.log("Need to update bin " + msg.bin + "fillLevel " + msg.fillLevel)
+            // Event handler for gauge updates
+            socket.on('update_gauges', function(msg) {
+                //console.log("Need to update bin " + msg.bin + "fillLevel " + msg.fillLevel)
                 if(Number(msg.bin) == 0) {
                     paperGauge.update(Number(msg.fillLevel));
-                    console.log("Paper fill level updated!");
+                    console.log("Paper fill level updated to " + msg.fillLevel + "!");
                 } else if (Number(msg.bin) == 1) {
                     alumGauge.update(Number(msg.fillLevel));
-                    console.log("Aluminum fill level updated!");
+                    console.log("Aluminum fill level updated to " + msg.fillLevel + "!");
                 } else if (Number(msg.bin) == 2) {
                     plasticGauge.update(Number(msg.fillLevel));
-                    console.log("Plastic fill level updated!");
+                    console.log("Plastic fill level updated to " + msg.fillLevel + "!");
                 } else if (Number(msg.bin) == 3) {
                     landGauge.update(Number(msg.fillLevel));
-                    console.log("Landfill fill level updated!");
+                    console.log("Landfill fill level updated to " + msg.fillLevel + "!");
                 }
             });
 
