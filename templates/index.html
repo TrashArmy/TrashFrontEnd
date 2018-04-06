@@ -25,6 +25,8 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
 
     <script type="text/javascript" charset="utf-8">
+        console.log("HELLO")
+        console.log({{hello}})
         $(document).ready(function() {
             // Use a "/test" namespace.
             namespace = '/test';
@@ -86,28 +88,28 @@
         <br>
         <h4><a href="/">Current Fill Level</a> | <a href="/pickupTimes"> Estimated Pick up Times </a> | <a id = 'data' href="/historicalData"> Historical Data </a> </h4>
     </center>
-        <table style="width:60%" align="center">
-            <tr>
-                <th>
-                    <h2 class = "home"> Paper </h2>
-                    <svg id="paperGauge" width="100%" height="225"></svg>
-                </th>
-                <th>
-                    <h2 class = "home"> Aluminum </h2>
-                    <svg id="alumGauge" width="100%" height="225"></svg>
-                </th>
-            </tr>
-            <tr>
-                <th>
-                    <h2 class = "home"> Plastic </h2>
-                    <svg id="plasticGauge" width="100%" height="225"></svg>
-                </th>
-                <th>
-                    <h2 class = "home"> Landfill </h2>
-                    <svg id="landGauge" width="100%" height="225"></svg>
-                </th>
-            </tr>
-        </table>
+    <table style="width:60%" align="center">
+        <tr>
+            <th>
+                <h2 class = "home"> Paper </h2>
+                <svg id="paperGauge" width="100%" height="225"></svg>
+            </th>
+            <th>
+                <h2 class = "home"> Aluminum </h2>
+                <svg id="alumGauge" width="100%" height="225"></svg>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <h2 class = "home"> Plastic </h2>
+                <svg id="plasticGauge" width="100%" height="225"></svg>
+            </th>
+            <th>
+                <h2 class = "home"> Landfill </h2>
+                <svg id="landGauge" width="100%" height="225"></svg>
+            </th>
+        </tr>
+    </table>
     <script language="JavaScript">
         var paperConfig = liquidFillGaugeDefaultSettings();
         paperConfig.circleColor = "#258ae7";

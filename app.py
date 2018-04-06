@@ -7,7 +7,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, close_room, ro
 import time
 import MySQLdb
 import sys
-
+import json
 
 HOST = "159.203.125.202"
 USER = "remote"
@@ -70,8 +70,9 @@ def home_page():
     		timeStamp[3] = item[2]
     		fillLevel[3] = item[3]
     print("Initial fill level of landfil " + str(fillLevel[3]))
-
-    return render_template('index.html', bin0 = fillLevel[0], bin1 = fillLevel[1], bin2 = fillLevel[2], bin3 = fillLevel[3])
+    cursor.close()
+    conn.close
+    return render_template('index.html', bin0 = fillLevel[0], bin1 = fillLevel[1], bin2 = fillLevel[2], bin3 = fillLevel[3], hello = "string")
 
 
 @app.route('/pickupTimes', methods=['GET'])
@@ -80,8 +81,27 @@ def view_times():
 
 
 @app.route('/historicalData', methods=['GET'])
-def view_history(): 
-    return render_template('historicalData.html')
+def view_history():
+    conn = MySQLdb.connect (host = HOST,
+                            user = USER,
+                            passwd = PASS,
+                            db = DB, 
+                            port = 3306)
+    cursor = conn.cursor();
+    cursor.execute("SELECT * FROM TrashData WHERE trashCanId=0 AND binId=0 AND emptied=1;");
+    results = cursor.fetchall();
+    length = len(results)
+    dateLastEmptied = results[length-1][2]
+    query = "SELECT * FROM TrashData WHERE trashCanId=0 AND binId=0 AND timestamp > '" + str(dateLastEmptied) + "'"
+    cursor.execute(query)
+    results = cursor.fetchall()
+    paperData = []
+    for item in results:
+        one = {}
+        one['date'] = str(item[2]);
+        one['fill'] = str(item[3]);
+        paperData.append(one);
+    return render_template('historicalData.html', paperData = json.dumps(paperData))
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
