@@ -77,31 +77,91 @@ def home_page():
 
 @app.route('/pickupTimes', methods=['GET'])
 def view_times():
-    return render_template('pickUpTimes.html')
+    paperTime = calcPickUpTime(0)
+    alumTime = calcPickUpTime(1)
+    plasticTime = calcPickUpTime(2)
+    landfillTime = calcPickUpTime(3)
+    return render_template('pickUpTimes.html', paperTime = paperTime, alumTime = alumTime, 
+        plasticTime= plasticTime, landfillTime = landfillTime )
+
+def calcPickUpTime(binId):
+    paperTime = ""
+    paperFillRate = calcAvgFillRate(binId)
+    paperData = getFillData(binId)
+    if paperFillRate is None:
+        paperTime = "Not enough data!"
+    else:
+        if len(paperData) == 0:
+            now = datetime.datetime.now()
+            paperTime = now + paperFillRate
+        else:
+            currFill = paperData[len(paperData) - 1]['fill'] 
+            percent = (100 - int(currFill)/100)
+            dateobj = datetime.strptime(paperData[len(paperData) - 1]['date'], '%Y-%m-%d %H:%M:%S')
+            paperTime =  dateobj + paperFillRate*percent   
+            paperTime = paperTime.strftime('%b %d %H:%M') 
+    return paperTime;
 
 
 @app.route('/historicalData', methods=['GET'])
 def view_history():
+    paperData = getFillData(0)
+    alumData = getFillData(1)
+    plasticData = getFillData(2)
+    landfillData = getFillData(3)
+    return render_template('historicalData.html', paperData = json.dumps(paperData), 
+        alumData =json.dumps(alumData), plasticData =json.dumps(plasticData), landfillData = json.dumps(landfillData) )
+
+def calcAvgFillRate(binNum):
     conn = MySQLdb.connect (host = HOST,
                             user = USER,
                             passwd = PASS,
                             db = DB, 
                             port = 3306)
     cursor = conn.cursor();
-    cursor.execute("SELECT * FROM TrashData WHERE trashCanId=0 AND binId=0 AND emptied=1;");
+    cmd = "SELECT * FROM TrashData WHERE trashCanId=0 AND binId=" + str(binNum) + " AND emptied=1;"
+    cursor.execute(cmd);
     results = cursor.fetchall();
     length = len(results)
-    dateLastEmptied = results[length-1][2]
-    query = "SELECT * FROM TrashData WHERE trashCanId=0 AND binId=0 AND timestamp > '" + str(dateLastEmptied) + "'"
-    cursor.execute(query)
+    lastDate = None
+    count = 0
+    avgEmptyRate = None
+    if length >= 2:
+        for result in results:
+            if lastDate is None:
+                lastDate = result[2];
+            else:
+                currDate = result[2]
+                diff = currDate - lastDate
+                lastDate = result[2]
+                if avgEmptyRate is None:
+                    avgEmptyRate = diff;
+                else:
+                    avgEmptyRate = (avgEmptyRate*count + diff)/(count + 1)
+            count = count + 1;
+    return avgEmptyRate;
+
+def getFillData(binId):
+    conn = MySQLdb.connect (host = HOST,
+                            user = USER,
+                            passwd = PASS,
+                            db = DB, 
+                            port = 3306)
+    cursor = conn.cursor();
+    cmd = "SELECT * FROM TrashData WHERE trashCanId=0 AND binId=" + str(binId) + " AND emptied=1;"
+    cursor.execute(cmd);
+    results = cursor.fetchall();
+    dateLastEmptied = results[-1][2]
+    cmd = "SELECT * FROM TrashData WHERE trashCanId=0 AND binId=" + str(binId) + " AND timestamp > '" + str(dateLastEmptied) + "'"
+    cursor.execute(cmd)
     results = cursor.fetchall()
-    paperData = []
+    data = []
     for item in results:
         one = {}
         one['date'] = str(item[2]);
         one['fill'] = str(item[3]);
-        paperData.append(one);
-    return render_template('historicalData.html', paperData = json.dumps(paperData))
+        data.append(one);
+    return data
 
 @socketio.on('connect', namespace='/test')
 def test_connect():

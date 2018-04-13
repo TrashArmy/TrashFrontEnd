@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
+
 <html>
 <head land="en">
     <title>Trash App</title>
@@ -12,7 +14,8 @@
 
     <!-- <meta charset="UTF-8"> -->
     <script src="http://d3js.org/d3.v4.min.js" language="JavaScript"></script>
-    <script src="historicalData.js" language="JavaScript"></script>
+    <!-- <script src="historicalData.js?random=<?php echo uniqid(); ?>"></script> -->
+    <script src="historicalData.js?v=<?php echo microtime(); ?>" language="JavaScript"></script>
 
     <style type="text/css">
       /* 13. Basic Styling with CSS */
@@ -33,36 +36,29 @@
     </style>
 </head>
 <body>
-  <center>
+   <center>
     <h1> Historical Data </h1>
     <br>
     <h4><a href="/">Current Fill Level</a> | <a href="/pickupTimes"> Estimated Pick up Times </a> | <a href="/historicalData"> Historical Data </a> </h4>
-    <div>
-      <img id=svg>
-        <div id = "paperGraph" > </div>
-      </img>
-      <img id=svg>
-        <div id = "alumGraph" > </div>
-      </img>
-      <img id=svg>
-        <div id = "plasticGraph" > </div>
-      </img>
-      <img id=svg>
-        <div id = "landfillGraph" > </div>
-      </img>
-    </div>
+    <h3> Aluminum Graph </h3>
+    <div id = "alumGraph" > </div>
+    <h3> Paper Graph </h3>
+    <div id = "paperGraph" > </div>
+    <h3> Plastic Graph </h3>
+    <div id = "plasticGraph" > </div>
+    <h3> Landfill Graph </h3>
+    <div id = "landfillGraph" > </div>
   </center>
-
+</body>
   <script type="text/javascript">
     // 2. Use the margin convention practice 
-    var print = {{paperData|tojson}};
-    console.log(print)
-    loadSVG("#paperGraph");
-    loadSVG("#alumGraph");
-    loadSVG("#plasticGraph");
-    loadSVG("#landfillGraph");
+    var paper = {{paperData|tojson}};
+    var alum =  {{alumData|tojson}};
+    var plastic =  {{plasticData|tojson}};
+    var landfill = {{landfillData|tojson}};
+    loadSVG("#paperGraph",paper);
+    loadSVG("#alumGraph",alum);
+    loadSVG("#plasticGraph",plastic);
+    loadSVG("#landfillGraph",landfill);
   </script>
-
-  </script>
-
 </html>
