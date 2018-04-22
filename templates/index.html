@@ -25,15 +25,12 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
 
     <script type="text/javascript" charset="utf-8">
-        console.log("HELLO")
-        console.log({{hello}})
         $(document).ready(function() {
             // Use a "/test" namespace.
             namespace = '/test';
 
             window.setInterval(function() {
-                 socket.emit('check_db', {data: 55});
-                 //console.log("setInterval!")
+                 socket.emit('check_db');
             }, 1000);
 
             // Connect to the Socket.IO server.
