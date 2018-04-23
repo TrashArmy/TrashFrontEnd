@@ -23,57 +23,41 @@ socketio = SocketIO(app, async_mode= async_mode)
 #!
 
 dbcount = 100000000000000
+PAPER = 0
+LANDFILL = 1
+PLASTIC = 2
+ALUMINUM = 3
+fillLevel = [0,0,0,0]
+timeStamp = [datetime(2000, 3, 9, 9, 11, 12),datetime(2000, 3, 9, 9, 11, 12),datetime(2000, 3, 9, 9, 11, 12),datetime(2000, 3, 9, 9, 11, 12)]
 
 
 @app.route('/', methods=['GET'])
 def home_page():
-    global dbcount, flag
+    global dbcount, PAPER, LANDFILL, PLASTIC, ALUMINUM
     conn = MySQLdb.connect (host = HOST,
                             user = USER,
                             passwd = PASS,
                             db = DB, 
                             port = 3306)
     cursor = conn.cursor();
-
-    fillLevel = [0,0,0,0]
-    timeStamp = [datetime(2000, 3, 9, 9, 11, 12),datetime(2000, 3, 9, 9, 11, 12),datetime(2000, 3, 9, 9, 11, 12),datetime(2000, 3, 9, 9, 11, 12)]
+    getFillLevel(PAPER, cursor)
+    getFillLevel(LANDFILL, cursor)
+    getFillLevel(PLASTIC, cursor)
+    getFillLevel(ALUMINUM, cursor)
     
-    #Bin 0 Fill Level
-    cursor.execute("SELECT * FROM TrashData WHERE trashCanId=0 AND binId=0;");
-    results = cursor.fetchall();
-    for item in results:
-    	if item[2] > timeStamp[0]:
-    		timeStamp[0] = item[2]
-    		fillLevel[0] = item[3]
-
-    #Bin 1 Fill Level
-    cursor.execute("SELECT * FROM TrashData WHERE trashCanId=0 AND binId=1;");
-    results = cursor.fetchall();
-    for item in results:
-    	if item[2] > timeStamp[1]:
-    		timeStamp[1] = item[2]
-    		fillLevel[1] = item[3]
-
-    #Bin 2 Fill Level
-    cursor.execute("SELECT * FROM TrashData WHERE trashCanId=0 AND binId=2;");
-    results = cursor.fetchall();
-    for item in results:
-    	if item[2] > timeStamp[2]:
-    		timeStamp[2] = item[2]
-    		fillLevel[2] = item[3]
-
-    #Bin 3 Fill Level
-    cursor.execute("SELECT * FROM TrashData WHERE trashCanId=0 AND binId=3;");
-    results = cursor.fetchall();
-    for item in results:
-    	if item[2] > timeStamp[3]:
-    		timeStamp[3] = item[2]
-    		fillLevel[3] = item[3]
-    print("Initial fill level of landfil " + str(fillLevel[3]))
     cursor.close()
     conn.close
     return render_template('index.html', bin0 = fillLevel[0], bin1 = fillLevel[1], bin2 = fillLevel[2], bin3 = fillLevel[3], hello = "string")
 
+def getFillLevel(binNum, cursor):
+    global fillLevel, timeStamp
+    cursor.execute("SELECT * FROM TrashData WHERE trashCanId=0 AND binId=" + str(binNum) + " ;");
+    results = cursor.fetchall();
+    one = {}
+    for item in results:
+        if item[2] > timeStamp[binNum]:
+            timeStamp[binNum] = item[2]
+            fillLevel[binNum] = item[3]     
 
 @app.route('/pickupTimes', methods=['GET'])
 def view_times():
