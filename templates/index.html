@@ -117,7 +117,7 @@
         paperConfig.textVertPosition = 0.2;
         paperConfig.waveAnimateTime = 1000;
         paperConfig.waveAnimate = false;
-        var paperGauge = loadLiquidFillGauge("paperGauge", {{bin0}}, paperConfig);
+        var paperGauge = loadLiquidFillGauge("paperGauge", {{paper}}, paperConfig);
         
         var alumConfig = liquidFillGaugeDefaultSettings();
         alumConfig.circleColor = "#5a6369";
@@ -127,7 +127,7 @@
         alumConfig.circleThickness = 0.2;
         alumConfig.textVertPosition = 0.2;
         alumConfig.waveAnimateTime = 1000;
-        var alumGauge= loadLiquidFillGauge("alumGauge", {{bin1}}, alumConfig);
+        var alumGauge= loadLiquidFillGauge("alumGauge", {{aluminum}}, alumConfig);
         
         var plasticConfig = liquidFillGaugeDefaultSettings();
         plasticConfig.circleColor = "#176f14";
@@ -140,7 +140,7 @@
         plasticConfig.waveAnimateTime = 2000;
         plasticConfig.waveHeight = 0.3;
         plasticConfig.waveCount = 1;
-        var plasticGauge = loadLiquidFillGauge("plasticGauge", {{bin2}}, plasticConfig);
+        var plasticGauge = loadLiquidFillGauge("plasticGauge", {{plastic}}, plasticConfig);
 
         var landConfig = liquidFillGaugeDefaultSettings();
         landConfig.circleColor = "#ab4700";
@@ -156,7 +156,7 @@
         landConfig.waveOffset = 0.25;
         landConfig.valueCountUp = false;
         landConfig.displayPercent = true;
-        var landGauge = loadLiquidFillGauge("landGauge", {{bin3}}, landConfig);
+        var landGauge = loadLiquidFillGauge("landGauge", {{landfill}}, landConfig);
 
         function NewValue(){
             if(Math.random() > .5){

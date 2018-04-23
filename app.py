@@ -33,7 +33,7 @@ timeStamp = [datetime(2000, 3, 9, 9, 11, 12),datetime(2000, 3, 9, 9, 11, 12),dat
 
 @app.route('/', methods=['GET'])
 def home_page():
-    global dbcount, PAPER, LANDFILL, PLASTIC, ALUMINUM
+    global dbcount, PAPER, LANDFILL, PLASTIC, ALUMINUM, fillLevel, timeStamp
     conn = MySQLdb.connect (host = HOST,
                             user = USER,
                             passwd = PASS,
@@ -44,10 +44,9 @@ def home_page():
     getFillLevel(LANDFILL, cursor)
     getFillLevel(PLASTIC, cursor)
     getFillLevel(ALUMINUM, cursor)
-    
     cursor.close()
     conn.close
-    return render_template('index.html', bin0 = fillLevel[0], bin1 = fillLevel[1], bin2 = fillLevel[2], bin3 = fillLevel[3], hello = "string")
+    return render_template('index.html', paper = fillLevel[PAPER], landfill = fillLevel[LANDFILL], plastic = fillLevel[PLASTIC], aluminum = fillLevel[ALUMINUM])
 
 def getFillLevel(binNum, cursor):
     global fillLevel, timeStamp
@@ -61,38 +60,38 @@ def getFillLevel(binNum, cursor):
 
 @app.route('/pickupTimes', methods=['GET'])
 def view_times():
-    paperTime = calcPickUpTime(0)
-    alumTime = calcPickUpTime(1)
-    plasticTime = calcPickUpTime(2)
-    landfillTime = calcPickUpTime(3)
+    paperTime = calcPickUpTime(PAPER)
+    alumTime = calcPickUpTime(ALUMINUM)
+    plasticTime = calcPickUpTime(PLASTIC)
+    landfillTime = calcPickUpTime(LANDFILL)
     return render_template('pickUpTimes.html', paperTime = paperTime, alumTime = alumTime, 
         plasticTime= plasticTime, landfillTime = landfillTime )
 
 def calcPickUpTime(binId):
-    paperTime = ""
-    paperFillRate = calcAvgFillRate(binId)
-    paperData = getFillData(binId)
-    if paperFillRate is None:
-        paperTime = "Not enough data!"
+    time = ""
+    fillRate = calcAvgFillRate(binId)
+    data = getFillData(binId)
+    if fillRate is None:
+        time = "Not enough data!"
     else:
-        if len(paperData) == 0:
+        if len(data) == 0:
             now = datetime.datetime.now()
-            paperTime = now + paperFillRate
+            time = now + fillRate
         else:
-            currFill = paperData[len(paperData) - 1]['fill'] 
+            currFill = data[len(data) - 1]['fill'] 
             percent = (100 - int(currFill)/100)
-            dateobj = datetime.strptime(paperData[len(paperData) - 1]['date'], '%Y-%m-%d %H:%M:%S')
-            paperTime =  dateobj + paperFillRate*percent   
-            paperTime = paperTime.strftime('%b %d %H:%M') 
-    return paperTime;
+            dateobj = datetime.strptime(data[len(data) - 1]['date'], '%Y-%m-%d %H:%M:%S')
+            time =  dateobj + fillRate*percent   
+            time = time.strftime('%b %d %H:%M') 
+    return time;
 
 
 @app.route('/historicalData', methods=['GET'])
 def view_history():
-    paperData = getFillData(0)
-    alumData = getFillData(1)
-    plasticData = getFillData(2)
-    landfillData = getFillData(3)
+    paperData = getFillData(PAPER)
+    alumData = getFillData(ALUMINUM)
+    plasticData = getFillData(PLASTIC)
+    landfillData = getFillData(LANDFILL)
     return render_template('historicalData.html', paperData = json.dumps(paperData), 
         alumData =json.dumps(alumData), plasticData =json.dumps(plasticData), landfillData = json.dumps(landfillData) )
 
@@ -167,7 +166,7 @@ def check_db():
                             db = DB, 
                             port = 3306)
     cursor = conn.cursor();
-    # # Take note of number of entries in db
+    # Take note of number of entries in db
     cursor.execute(" SELECT COUNT(*) FROM TrashData");
     results = cursor.fetchall();
     currentCount = int(results[0][0])
